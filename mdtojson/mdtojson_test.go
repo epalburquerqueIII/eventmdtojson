@@ -8,7 +8,7 @@ import (
 func TestProcessRepo(t *testing.T) {
 	t.Run("ProcessRepo(<URL>, <DIR>)", func(t *testing.T) {
 		testRepoURL := "https://github.com/nosajio/writing"
-		testRepoDIR := "/tmp/posts"
+		testRepoDIR := "/tmp/events"
 		json, err := ProcessRepo(testRepoURL, testRepoDIR)
 
 		if err != nil {
