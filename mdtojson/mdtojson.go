@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/nosajio/markdown-to-json/parse"
+	"../parse"
 )
 
 // ProcessRepo clones and parses a directory of markdown files with YAML
