@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -14,7 +13,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var filePattern = regexp.MustCompile(`([0-9a-z\-]*)-(20[0-9]{2}-[0-9]{2}-[0-9]{2})\.md$`)
+var filePattern = regexp.MustCompile(`\.md$`)
 
 type frontmatter struct {
 	title string
@@ -23,22 +22,13 @@ type frontmatter struct {
 type mdFile struct {
 	filename string
 	bytes    []byte
-	date     time.Time
-	slug     string
-	Description string    
-	Type string
-	Image string
-	Categories string
-	Tags string
 }
 
 // Parsed represents a single parsed file
 type Parsed struct {
 	Date        time.Time `json:"date"`
-	Slug        string    `json:"slug"`
 	Description string    `json:"description"`
 	Title       string    `json:"title"`
-	Type        string    `json:"type"`
 	Image       string    `json:"image"`
 	Categories  string    `json:"categories"`
 	Tags        string    `json:"tags"`
@@ -63,15 +53,13 @@ func readMDFiles(dir string) ([]mdFile, error) {
 				continue
 			}
 			// Extract slug and date from filename
-			filenameParts := filePattern.FindAllStringSubmatch(n, -1)
-			dateStr := filenameParts[0][2]
-			slugStr := filenameParts[0][1]
-			d, err := time.Parse("2006-01-02", dateStr)
+			//			filenameParts := filePattern.FindAllStringSubmatch(n, -1)
+			//dateStr := filenameParts[0][2]
+			//slugStr := filenameParts[0][1]
+			//d, err := time.Parse("2006-01-02", dateStr)
 			newFile := mdFile{
 				filename: n,
-				bytes:    f,
-				date:     d,
-				slug:     slugStr}
+				bytes:    f}
 			mdFiles = append(mdFiles, newFile) //almacena los datos de los ficheros en un array
 		}
 	}
@@ -91,13 +79,13 @@ func extractYAMLFrontmatter(body []byte) (map[string]string, string, error) {
 	return parsedYAML, bodyString, nil
 }
 
-func sortFilesChronological(f []mdFile) ([]mdFile, error) {
+/* func sortFilesChronological(f []mdFile) ([]mdFile, error) {
 	fSorted := make([]mdFile, len(f))
 	copy(fSorted, f)
 	sort.Slice(fSorted, func(i, j int) bool { return fSorted[i].date.After(fSorted[j].date) })
 	return fSorted, nil
 }
-
+*/
 func parseBodyHTML(b []byte) []byte {
 	// Custom img tag
 	imgTagPattern := regexp.MustCompile(`(?im)\%img\[(.*)\]\((.*)\)`)
@@ -107,37 +95,37 @@ func parseBodyHTML(b []byte) []byte {
 	return bodyHTML
 }
 
-// Files parses a directory of markdown files and converts them into Post
+// Files parses a directory of markdown files and converts them into Event
 // types
 func Files(dir string) ([]Parsed, error) {
-	posts := []Parsed{}
-	// Find post files in specified dir
-	postFiles, err := readMDFiles(dir)
+	events := []Parsed{}
+	// Find event files in specified dir
+	eventFiles, err := readMDFiles(dir)
 	if err != nil {
 		return nil, err
 	}
 	// Sort the files by the date in the title
-	postFiles, err = sortFilesChronological(postFiles)
+	//	eventFiles, err = sortFilesChronological(eventFiles)
 	if err != nil {
 		return nil, err
 	}
-	for _, f := range postFiles {
+	for _, f := range eventFiles {
 		meta, body, err := extractYAMLFrontmatter(f.bytes)
 		if err != nil {
 			log.Printf("Could not extract frontmatter for %s (%s)", f.filename, err.Error())
 			continue
 		}
-		bodyHTML := parseBodyHTML([]byte(body))
-		post := Parsed{
-			Title:     meta["title"],
-			Date:      f.date,
-			Slug:      f.slug,
-			Description: string(description),    
-			Type: string(type),
-			Image: string(image),
-			Categories: string(categories),
-			Tags: string(tags)}
-		posts = append(posts, post)
+		log.Printf("Could not extract frontmatter for %s (%s)", body, err.Error())
+		//		bodyHTML := parseBodyHTML([]byte(f.Description))
+		event := Parsed{
+			Title: meta["title"],
+			//			Date:        f.date,
+			//			Description: string(bodyHTML),
+			//			Image:       string(f.Image),
+			//			Categories:  string(f.Categories),
+			//			Tags:        string(f.Tags)
+		}
+		events = append(events, event)
 	}
-	return posts, nil
+	return events, nil
 }

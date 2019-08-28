@@ -15,13 +15,13 @@ For example:
 ```
 Will work:
 foo-bar-2019-03-21.md
-my-awesome-post-2018-12-03.md
-my-awesome-post-2-2018-12-04.md
+my-awesome-event-2018-12-03.md
+my-awesome-event-2-2018-12-04.md
 
 Won't work:
 my_file.md
 fizz buzz-2019-02-09.md
-my-post-2019-2-9.md
+my-event-2019-2-9.md
 ```"# eventmdtojson" 
 "# eventmdtojson" 
 "# eventmdtojson" 
