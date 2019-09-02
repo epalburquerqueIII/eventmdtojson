@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	s "strings"
 	"time"
 
@@ -26,12 +27,15 @@ type mdFile struct {
 
 // Parsed represents a single parsed file
 type Parsed struct {
+	Title       string    `json:"title"`
 	Date        time.Time `json:"date"`
 	Description string    `json:"description"`
-	Title       string    `json:"title"`
+	Tipo        string    `json:"tipo"`
 	Image       string    `json:"image"`
+	Imageslide  string    `json:"imageslide"`
 	Categories  string    `json:"categories"`
 	Tags        string    `json:"tags"`
+	Body        string    `json:"body"`
 }
 
 func readMDFiles(dir string) ([]mdFile, error) {
@@ -102,9 +106,10 @@ func analizalinea(linea string) (string, string) {
 	a := s.Index(linea, ":")
 	if a > 0 {
 		campo = linea[:a]
+		dato = strings.TrimSpace(linea[a+2:])
+		dato = dato[2 : len(dato)-1]
 	}
-	//cadena = cadena.substring(0, cadena.length() - 2); para quitar lo ultimo
-	//TrimString := Trim(linea[a+1:])
+
 	return campo, dato
 }
 
@@ -112,7 +117,7 @@ func analizalinea(linea string) (string, string) {
 // types
 func Files(dir string) ([]Parsed, error) {
 	var lineas []string
-	var descripcion string
+	var descripcion []string
 	var inicio bool = false
 	var campo, dato string
 	events := []Parsed{}
@@ -135,11 +140,11 @@ func Files(dir string) ([]Parsed, error) {
 			if inicio {
 				campo, dato = analizalinea(linea)
 				if campo == "title" {
-					descripcion = dato
+					descripcion = append(descripcion, dato)
 				} else {
 					if campo == "imagen" {
 					}
-					//descripcion = append(descripcion, campo)
+
 				}
 			}
 			if linea == "---" {
@@ -152,12 +157,11 @@ func Files(dir string) ([]Parsed, error) {
 		defer file.Close()
 
 		event := Parsed{
-			Title: descripcion,
-			//			Date:        f.date,
-			//			Description: string(bodyHTML),
-			//			Image:       string(f.Image),
-			//          Categories: string(f.Categories),
-			//			Tags:        string(f.Tags)
+			//Title: 			descripcion,
+			//Date:        f.date,
+			//Description: string(bodyHTML),
+			//Image:       string(f.Image),
+			//Categories:  string(f.Categories),
 		}
 		events = append(events, event)
 	}
