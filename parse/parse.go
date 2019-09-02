@@ -1,16 +1,16 @@
 package parse
 
 import (
+	"bufio"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
+	s "strings"
 	"time"
 
 	"gopkg.in/russross/blackfriday.v2"
-	"gopkg.in/yaml.v2"
 )
 
 var filePattern = regexp.MustCompile(`\.md$`)
@@ -66,7 +66,7 @@ func readMDFiles(dir string) ([]mdFile, error) {
 	return mdFiles, nil
 }
 
-func extractYAMLFrontmatter(body []byte) (map[string]string, string, error) {
+/* func extractYAMLFrontmatter(body []byte) (map[string]string, string, error) {
 	frontmatterPattern := regexp.MustCompile(`---\n(.*: .*\n)+---`)
 	bodyString := frontmatterPattern.ReplaceAllString(string(body), "")
 	frontmatterString := frontmatterPattern.Find(body)
@@ -77,7 +77,7 @@ func extractYAMLFrontmatter(body []byte) (map[string]string, string, error) {
 		return nil, bodyString, err
 	}
 	return parsedYAML, bodyString, nil
-}
+} */
 
 /* func sortFilesChronological(f []mdFile) ([]mdFile, error) {
 	fSorted := make([]mdFile, len(f))
@@ -95,9 +95,26 @@ func parseBodyHTML(b []byte) []byte {
 	return bodyHTML
 }
 
-// Files parses a directory of markdown files and converts them into Event
+func analizalinea(linea string) (string, string) {
+
+	var campo, dato string
+
+	a := s.Index(linea, ":")
+	if a > 0 {
+		campo = linea[:a]
+	}
+	//cadena = cadena.substring(0, cadena.length() - 2); para quitar lo ultimo
+	//TrimString := Trim(linea[a+1:])
+	return campo, dato
+}
+
+//Files parses a directory of markdown files and converts them into Event
 // types
 func Files(dir string) ([]Parsed, error) {
+	var lineas []string
+	var descripcion string
+	var inicio bool = false
+	var campo, dato string
 	events := []Parsed{}
 	// Find event files in specified dir
 	eventFiles, err := readMDFiles(dir)
@@ -106,26 +123,43 @@ func Files(dir string) ([]Parsed, error) {
 	}
 	// Sort the files by the date in the title
 	//	eventFiles, err = sortFilesChronological(eventFiles)
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range eventFiles {
-		meta, body, err := extractYAMLFrontmatter(f.bytes)
-		if err != nil {
-			log.Printf("Could not extract frontmatter for %s (%s)", f.filename, err.Error())
-			continue
+
+	for _, fichero := range eventFiles {
+		file, err := os.Open(dir + "/" + fichero.filename) // abre el archivo
+		scanner := bufio.NewScanner(file)                  // esto deberia escanearlo y analizar las lineas
+		for scanner.Scan() {
+			lineas = append(lineas, scanner.Text()) //va linea or linea añadiendo el contenido
 		}
-		log.Printf("Could not extract frontmatter for %s (%s)", body, err.Error())
-		//		bodyHTML := parseBodyHTML([]byte(f.Description))
+
+		for _, linea := range lineas {
+			if inicio {
+				campo, dato = analizalinea(linea)
+				if campo == "title" {
+					descripcion = dato
+				} else {
+					if campo == "imagen" {
+					}
+					//descripcion = append(descripcion, campo)
+				}
+			}
+			if linea == "---" {
+				inicio = true
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+
 		event := Parsed{
-			Title: meta["title"],
+			Title: descripcion,
 			//			Date:        f.date,
 			//			Description: string(bodyHTML),
 			//			Image:       string(f.Image),
-			//			Categories:  string(f.Categories),
+			//          Categories: string(f.Categories),
 			//			Tags:        string(f.Tags)
 		}
 		events = append(events, event)
 	}
-	return events, nil
+	return nil, nil
 }
