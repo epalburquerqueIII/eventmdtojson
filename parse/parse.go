@@ -104,12 +104,16 @@ func analizalinea(linea string) (string, string) {
 	var campo, dato string
 
 	a := s.Index(linea, ":")
-	if a > 0 {
-		campo = linea[:a]
-		dato = strings.TrimSpace(linea[a+2:])
-		dato = dato[2 : len(dato)-1]
+	for a == -1 {
+		dato = strings.TrimSpace(linea[a+1:])
 	}
-
+	if len(linea) > a+3 {
+		if a > 0 {
+			campo = linea[:a]
+			dato = strings.TrimSpace(linea[a+1:])
+			dato = dato[1 : len(dato)-1]
+		}
+	}
 	return campo, dato
 }
 
@@ -118,7 +122,7 @@ func analizalinea(linea string) (string, string) {
 func Files(dir string) ([]Parsed, error) {
 	var lineas []string
 	var descripcion []string
-	var inicio bool = false
+	var inicio, fin bool = false, false
 	var campo, dato string
 	events := []Parsed{}
 	// Find event files in specified dir
@@ -137,18 +141,24 @@ func Files(dir string) ([]Parsed, error) {
 		}
 
 		for _, linea := range lineas {
+
 			if inicio {
 				campo, dato = analizalinea(linea)
-				if campo == "title" {
+				if campo != "---" {
 					descripcion = append(descripcion, dato)
 				} else {
-					if campo == "imagen" {
+					if campo == "" {
+						descripcion = append(descripcion, dato)
 					}
-
+				}
+				if linea == "---" {
+					fin = true
 				}
 			}
-			if linea == "---" {
-				inicio = true
+			if fin == false {
+				if linea == "---" {
+					inicio = true
+				}
 			}
 		}
 		if err != nil {
