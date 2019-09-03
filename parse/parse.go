@@ -144,7 +144,6 @@ func Files(dir string) ([]Parsed, error) {
 				} else {
 					if campo == "imagen" {
 					}
-
 				}
 			}
 			if linea == "---" {
@@ -155,13 +154,16 @@ func Files(dir string) ([]Parsed, error) {
 			return nil, err
 		}
 		defer file.Close()
-
 		event := Parsed{
-			//Title: 			descripcion,
-			//Date:        f.date,
-			//Description: string(bodyHTML),
-			//Image:       string(f.Image),
-			//Categories:  string(f.Categories),
+			Title: fichero.filename,
+			//Date:        time.Time,
+			Description: fichero.filename,
+			Tipo:        fichero.filename,
+			Image:       fichero.filename,
+			Imageslide:  fichero.filename,
+			Categories:  fichero.filename,
+			Tags:        fichero.filename,
+			Body:        fichero.filename,
 		}
 		events = append(events, event)
 	}
