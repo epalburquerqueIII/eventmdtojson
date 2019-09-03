@@ -122,7 +122,7 @@ func analizalinea(linea string) (string, string) {
 // types
 func Files(dir string) ([]Parsed, error) {
 	var lineas []string
-	var descripcion []string
+	var title,descripcion string
 	//var body []string
 	var inicio, fin bool = false, false
 	var campo, dato string
@@ -146,40 +146,28 @@ func Files(dir string) ([]Parsed, error) {
 
 			if inicio {
 				campo, dato = analizalinea(linea)
-				if campo != "---" {
-					descripcion = append(descripcion, dato)
-				} else {
-					if campo == "" {
-						descripcion = append(descripcion, dato)
-					}
-<<<<<<< HEAD
-=======
-				}
 				if linea == "---" {
 					fin = true
->>>>>>> 7493d9b22f1ca79a3e9efde91d7f691a8664e81f
+					inicio = false
+				} else {
+					switch s.ToLower(campo) {
+						case "title" : title = campo
+						case 
+					}
 				}
 			}
 
-			if fin == true {
-				inicio = false
-
-				_, dato = analizalinea(linea)
-				descripcion = append(descripcion, dato)
-
-			}
-			if fin == false {
+			if fin {
+				body = body + linea
+			} else {
 				if linea == "---" {
 					inicio = true
 				}
 			}
 		}
-		if err != nil {
-			return nil, err
-		}
 		defer file.Close()
 		event := Parsed{
-			Title: fichero.filename,
+			Title: title,
 			//Date:        time.Time,
 			Description: fichero.filename,
 			Tipo:        fichero.filename,
