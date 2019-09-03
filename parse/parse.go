@@ -104,8 +104,9 @@ func analizalinea(linea string) (string, string) {
 	var campo, dato string
 
 	a := s.Index(linea, ":")
-	for a == -1 {
+	if a == -1 {
 		dato = strings.TrimSpace(linea[a+1:])
+		dato = dato[1 : len(dato)-1]
 	}
 	if len(linea) > a+3 {
 		if a > 0 {
@@ -122,6 +123,7 @@ func analizalinea(linea string) (string, string) {
 func Files(dir string) ([]Parsed, error) {
 	var lineas []string
 	var descripcion []string
+	//var body []string
 	var inicio, fin bool = false, false
 	var campo, dato string
 	events := []Parsed{}
@@ -154,6 +156,14 @@ func Files(dir string) ([]Parsed, error) {
 				if linea == "---" {
 					fin = true
 				}
+			}
+
+			if fin == true {
+				inicio = false
+
+				_, dato = analizalinea(linea)
+				descripcion = append(descripcion, dato)
+
 			}
 			if fin == false {
 				if linea == "---" {
