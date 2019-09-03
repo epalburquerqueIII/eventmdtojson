@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 	s "strings"
-	"time"
 
 	"gopkg.in/russross/blackfriday.v2"
 )
@@ -27,15 +26,17 @@ type mdFile struct {
 
 // Parsed represents a single parsed file
 type Parsed struct {
-	Title       string    `json:"title"`
-	Date        time.Time `json:"date"`
-	Description string    `json:"description"`
-	Tipo        string    `json:"tipo"`
-	Image       string    `json:"image"`
-	Imageslide  string    `json:"imageslide"`
-	Categories  string    `json:"categories"`
-	Tags        string    `json:"tags"`
-	Body        string    `json:"body"`
+	Title         string `json:"title"`
+	Date          string `json:"date"`
+	Description   string `json:"description"`
+	Tipo          string `json:"tipo"`
+	Image         string `json:"image"`
+	Imageslide    string `json:"imageslide"`
+	Author        string `json:"author"`
+	Identificator string `json:"identificador"`
+	Categorias    string `json:"categorias"`
+	Tags          string `json:"tags"`
+	Body          string `json:"body"`
 }
 
 func readMDFiles(dir string) ([]mdFile, error) {
@@ -122,10 +123,11 @@ func analizalinea(linea string) (string, string) {
 // types
 func Files(dir string) ([]Parsed, error) {
 	var lineas []string
-	var title,descripcion string
-	//var body []string
+	var title, fecha string
+
+	var body string
 	var inicio, fin bool = false, false
-	var campo, dato string
+	var campo, dato, descripcion, tipos, imagen, slider, author, identificador, categorias, tags string
 	events := []Parsed{}
 	// Find event files in specified dir
 	eventFiles, err := readMDFiles(dir)
@@ -151,8 +153,35 @@ func Files(dir string) ([]Parsed, error) {
 					inicio = false
 				} else {
 					switch s.ToLower(campo) {
-						case "title" : title = campo
-						case 
+					case "title":
+						title = dato
+
+					case "date":
+						fecha = dato
+
+					case "description":
+						descripcion = dato
+
+					case "type":
+						tipos = dato
+
+					case "image":
+						imagen = dato
+
+					case "imageslider":
+						slider = dato
+
+					case "author":
+						author = dato
+
+					case "identifier":
+						identificador = dato
+
+					case "categories":
+						categorias = dato
+
+					case "tags":
+						tags = dato
 					}
 				}
 			}
@@ -164,20 +193,26 @@ func Files(dir string) ([]Parsed, error) {
 					inicio = true
 				}
 			}
+			if err != nil {
+				panic(err.Error())
+
+			}
 		}
 		defer file.Close()
 		event := Parsed{
-			Title: title,
-			//Date:        time.Time,
-			Description: fichero.filename,
-			Tipo:        fichero.filename,
-			Image:       fichero.filename,
-			Imageslide:  fichero.filename,
-			Categories:  fichero.filename,
-			Tags:        fichero.filename,
-			Body:        fichero.filename,
+			Title:         title,
+			Date:          fecha,
+			Description:   descripcion,
+			Tipo:          tipos,
+			Image:         imagen,
+			Imageslide:    slider,
+			Author:        author,
+			Identificator: identificador,
+			Categorias:    categorias,
+			Tags:          tags,
+			Body:          body,
 		}
 		events = append(events, event)
 	}
-	return nil, nil
+	return events, err
 }
