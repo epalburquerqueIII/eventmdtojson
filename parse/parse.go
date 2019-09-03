@@ -9,8 +9,6 @@ import (
 	"regexp"
 	"strings"
 	s "strings"
-
-	"gopkg.in/russross/blackfriday.v2"
 )
 
 var filePattern = regexp.MustCompile(`\.md$`)
@@ -42,9 +40,7 @@ type Parsed struct {
 func readMDFiles(dir string) ([]mdFile, error) {
 	mdFiles := []mdFile{}
 	d, err := os.Open(dir)
-	if err != nil {
-		return nil, err
-	}
+
 	defer d.Close()
 	files, err := d.Readdirnames(-1)
 	if err != nil {
@@ -57,11 +53,6 @@ func readMDFiles(dir string) ([]mdFile, error) {
 				log.Printf("Cannot read file %s/%s", dir, n)
 				continue
 			}
-			// Extract slug and date from filename
-			//			filenameParts := filePattern.FindAllStringSubmatch(n, -1)
-			//dateStr := filenameParts[0][2]
-			//slugStr := filenameParts[0][1]
-			//d, err := time.Parse("2006-01-02", dateStr)
 			newFile := mdFile{
 				filename: n,
 				bytes:    f}
@@ -70,36 +61,6 @@ func readMDFiles(dir string) ([]mdFile, error) {
 	}
 	return mdFiles, nil
 }
-
-/* func extractYAMLFrontmatter(body []byte) (map[string]string, string, error) {
-	frontmatterPattern := regexp.MustCompile(`---\n(.*: .*\n)+---`)
-	bodyString := frontmatterPattern.ReplaceAllString(string(body), "")
-	frontmatterString := frontmatterPattern.Find(body)
-	plainYAMLString := strings.Replace(string(frontmatterString), "---", "", 2)
-	parsedYAML := make(map[string]string)
-	err := yaml.Unmarshal([]byte(plainYAMLString), &parsedYAML)
-	if err != nil {
-		return nil, bodyString, err
-	}
-	return parsedYAML, bodyString, nil
-} */
-
-/* func sortFilesChronological(f []mdFile) ([]mdFile, error) {
-	fSorted := make([]mdFile, len(f))
-	copy(fSorted, f)
-	sort.Slice(fSorted, func(i, j int) bool { return fSorted[i].date.After(fSorted[j].date) })
-	return fSorted, nil
-}
-*/
-func parseBodyHTML(b []byte) []byte {
-	// Custom img tag
-	imgTagPattern := regexp.MustCompile(`(?im)\%img\[(.*)\]\((.*)\)`)
-	b = imgTagPattern.ReplaceAll(b, []byte("<img src=\"$2\" alt=\"$1\" /><div class=\"img-caption\">$1</div>"))
-	// Render standard markdown
-	bodyHTML := blackfriday.Run(b)
-	return bodyHTML
-}
-
 func analizalinea(linea string) (string, string) {
 
 	var campo, dato string
