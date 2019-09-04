@@ -19,7 +19,6 @@ type frontmatter struct {
 
 type mdFile struct {
 	filename string
-	bytes    []byte
 }
 
 // Parsed represents a single parsed file
@@ -48,18 +47,19 @@ func readMDFiles(dir string) ([]mdFile, error) {
 	}
 	for _, n := range files {
 		if filePattern.Match([]byte(n)) {
-			f, err := ioutil.ReadFile(filepath.Join(dir, n)) //ioutil para entrada y salida de datos
+			_, err := ioutil.ReadFile(filepath.Join(dir, n)) //ioutil para entrada y salida de datos
 			if err != nil {
 				log.Printf("Cannot read file %s/%s", dir, n)
 				continue
 			}
 			newFile := mdFile{
 				filename: n,
-				bytes:    f}
+				//bytes:    f
+			}
 			mdFiles = append(mdFiles, newFile) //almacena los datos de los ficheros en un array
 		}
 	}
-	return mdFiles, nil
+	return mdFiles, err
 }
 func analizalinea(linea string) (string, string) {
 
@@ -104,76 +104,76 @@ func Files(dir string) ([]Parsed, error) {
 		for scanner.Scan() {
 			lineas = append(lineas, scanner.Text()) //va linea or linea añadiendo el contenido
 		}
+		if err != nil {
+			panic(err.Error())
 
-		for _, linea := range lineas {
-
-			if inicio {
-				campo, dato = analizalinea(linea)
-				if linea == "---" {
-					fin = true
-					inicio = false
-				} else {
-					switch s.ToLower(campo) {
-					case "title":
-						title = dato
-
-					case "date":
-						fecha = dato
-
-					case "description":
-						descripcion = dato
-
-					case "type":
-						tipos = dato
-
-					case "image":
-						imagen = dato
-
-					case "imageslider":
-						slider = dato
-
-					case "author":
-						author = dato
-
-					case "identifier":
-						identificador = dato
-
-					case "categories":
-						categorias = dato
-
-					case "tags":
-						tags = dato
-					}
-				}
-			}
-
-			if fin {
-				body = body + linea
-			} else {
-				if linea == "---" {
-					inicio = true
-				}
-			}
-			if err != nil {
-				panic(err.Error())
-
-			}
 		}
-		defer file.Close()
-		event := Parsed{
-			Title:         title,
-			Date:          fecha,
-			Description:   descripcion,
-			Tipo:          tipos,
-			Image:         imagen,
-			Imageslide:    slider,
-			Author:        author,
-			Identificator: identificador,
-			Categorias:    categorias,
-			Tags:          tags,
-			Body:          body,
-		}
-		events = append(events, event)
 	}
+	for _, linea := range lineas {
+
+		if inicio {
+			campo, dato = analizalinea(linea)
+			if linea == "---" {
+				fin = true
+				inicio = false
+			} else {
+				switch s.ToLower(campo) {
+				case "title":
+					title = dato
+
+				case "date":
+					fecha = dato
+
+				case "description":
+					descripcion = dato
+
+				case "type":
+					tipos = dato
+
+				case "image":
+					imagen = dato
+
+				case "imageslider":
+					slider = dato
+
+				case "author":
+					author = dato
+
+				case "identifier":
+					identificador = dato
+
+				case "categories":
+					categorias = dato
+
+				case "tags":
+					tags = dato
+				}
+			}
+		}
+
+		if fin {
+			body = body + linea
+		} else {
+			if linea == "---" {
+				inicio = true
+			}
+		}
+
+	}
+	event := Parsed{
+		Title:         title,
+		Date:          fecha,
+		Description:   descripcion,
+		Tipo:          tipos,
+		Image:         imagen,
+		Imageslide:    slider,
+		Author:        author,
+		Identificator: identificador,
+		Categorias:    categorias,
+		Tags:          tags,
+		Body:          body,
+	}
+	events = append(events, event)
+
 	return events, err
 }
